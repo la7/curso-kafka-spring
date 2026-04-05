@@ -14,6 +14,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.MicrometerProducerListener;
+
+import io.micrometer.prometheusmetrics.PrometheusConfig;
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
@@ -54,6 +60,7 @@ public class KafkaConfiguration {
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate() {
         DefaultKafkaProducerFactory<String, String> producerFactory = new DefaultKafkaProducerFactory<>(producerProperties());
+        producerFactory.addListener(new MicrometerProducerListener<>(meterRegistry())); // Agrega el listener de Micrometer para métricas
         KafkaTemplate<String, String> kafkaTemplate = new KafkaTemplate<>(producerFactory);
         return kafkaTemplate;
     }
@@ -70,5 +77,11 @@ public class KafkaConfiguration {
         factory.setBatchListener(true); // Enable batch listening
         factory.setConcurrency(5); // Set the number of concurrent threads for processing messages (Multithreading)
         return factory;
+    }
+
+    @Bean
+    public MeterRegistry meterRegistry() {
+        PrometheusMeterRegistry prometheusMeterRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+        return prometheusMeterRegistry;
     }
 }

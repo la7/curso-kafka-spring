@@ -15,17 +15,22 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @SpringBootApplication
+@EnableScheduling
 public class CursoKafkaSpringApplication implements CommandLineRunner {
 
 	private static final Logger logger = LoggerFactory.getLogger(CursoKafkaSpringApplication.class);
 	
 	@Autowired
 	private KafkaTemplate<String, String> kafkaTemplate;
-
+	
+	/*
 	@Autowired
 	private KafkaListenerEndpointRegistry registry;
+	*/
 
 	@KafkaListener(id = "l2apId", autoStartup = "false",topics = "l2ap-topic", groupId = "l2ap-group", containerFactory = "kafkaListenerContainerFactory", properties = {"max.poll.interval.ms=4000","max.poll.records=10"})
 	public void listen(List<ConsumerRecord<String, String>> messages) {
@@ -35,21 +40,32 @@ public class CursoKafkaSpringApplication implements CommandLineRunner {
 		}
 		logger.warn("Finished processing BATCH complete");
 	}
+
+	@Scheduled(fixedDelay = 1000, initialDelay = 5000 ) // Envía un mensaje cada 10 segundos
+	public void print() {
+		logger.info("L2aP - Enviando mensaje programado...");
+		//kafkaTemplate.send("l2ap-topic", "Scheduled Message Kafka L2AP");
+	}
+
 	public static void main(String[] args) {
 		SpringApplication.run(CursoKafkaSpringApplication.class, args);
 	}
 	/*SYNC*/
 	@Override
 	public void run(String... args) throws Exception {
+		
 		for(int i=0; i<100; i++) {
 			kafkaTemplate.send("l2ap-topic", String.valueOf(i),String.format("Sample Message %d", i));
 		}
+		
+		/*
 		logger.info("Espera de 5 segundos para que se procesen los mensajes...");
 		Thread.sleep(5000); // Espera a que se procesen los mensajes antes de cerrar la aplicación
 		logger.info("Listener iniciado, esperando mensajes...");
 		registry.getListenerContainer("l2apId").start(); // Inicia el listener
 		Thread.sleep(3000); // Mantiene la aplicación en ejecución para recibir mensajes
 		registry.getListenerContainer("l2apId").stop(); // Detiene el listener
+		*/
 	}
 
 	/*ASYNC*/
