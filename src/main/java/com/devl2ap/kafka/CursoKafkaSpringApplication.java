@@ -36,7 +36,9 @@ public class CursoKafkaSpringApplication implements CommandLineRunner {
 	/*SYNC*/
 	@Override
 	public void run(String... args) throws Exception {
-		kafkaTemplate.send("l2ap-topic", "Sample Message Kafka L2AP SYNC").get(100,TimeUnit.MILLISECONDS);
+		for(int i=0; i<100; i++) {
+			kafkaTemplate.send("l2ap-topic", String.format("Sample Message %d", i));
+		}
 	}
 
 	/*ASYNC*/
