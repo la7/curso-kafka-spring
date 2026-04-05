@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +24,10 @@ public class CursoKafkaSpringApplication implements CommandLineRunner {
 	private KafkaTemplate<String, String> kafkaTemplate;
 
 	@KafkaListener(topics = "l2ap-topic", groupId = "l2ap-group", containerFactory = "kafkaListenerContainerFactory", properties = {"max.poll.interval.ms=4000","max.poll.records=10"})
-	public void listen(List<String> messages) {
+	public void listen(List<ConsumerRecord<String, String>> messages) {
 		logger.warn("Start reading BATCH");
-		for(String message:messages) {
-			logger.warn("Received message: {}", message);
+		for(ConsumerRecord<String, String> message : messages) {
+			logger.warn("Partition: {}, Offset: {}, Key: {}, Value: {}", message.partition(), message.offset(), message.key(), message.value());
 		}
 		logger.warn("Finished processing BATCH complete");
 	}
@@ -37,7 +38,7 @@ public class CursoKafkaSpringApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		for(int i=0; i<100; i++) {
-			kafkaTemplate.send("l2ap-topic", String.format("Sample Message %d", i));
+			kafkaTemplate.send("l2ap-topic", String.valueOf(i),String.format("Sample Message %d", i));
 		}
 	}
 
