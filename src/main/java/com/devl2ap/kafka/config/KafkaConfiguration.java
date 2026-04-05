@@ -6,6 +6,8 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.HashMap;
+
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +16,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 
 @Configuration
@@ -26,6 +29,15 @@ public class KafkaConfiguration {
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
                     
         return props;
+    }
+
+    @Bean
+    public NewTopic l2apTopic() {
+        // Esto le dice a Spring que el topic 'l2ap-topic' debe tener 5 particiones
+        return TopicBuilder.name("l2ap-topic")
+                .partitions(5)
+                .replicas(1)
+                .build();
     }
 
     public Map<String, Object> consumerProperties() {
@@ -56,6 +68,7 @@ public class KafkaConfiguration {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.setBatchListener(true); // Enable batch listening
+        factory.setConcurrency(5); // Set the number of concurrent threads for processing messages (Multithreading)
         return factory;
     }
 }
