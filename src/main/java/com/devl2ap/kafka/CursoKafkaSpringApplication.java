@@ -1,5 +1,6 @@
 package com.devl2ap.kafka;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -21,9 +22,13 @@ public class CursoKafkaSpringApplication implements CommandLineRunner {
 	@Autowired
 	private KafkaTemplate<String, String> kafkaTemplate;
 
-	@KafkaListener(topics = "l2ap-topic", groupId = "l2ap-group")
-	public void listen(String message) {
-		logger.warn("Received message: {}", message);
+	@KafkaListener(topics = "l2ap-topic", groupId = "l2ap-group", containerFactory = "kafkaListenerContainerFactory", properties = {"max.poll.interval.ms=4000","max.poll.records=10"})
+	public void listen(List<String> messages) {
+		logger.warn("Start reading BATCH");
+		for(String message:messages) {
+			logger.warn("Received message: {}", message);
+		}
+		logger.warn("Finished processing BATCH complete");
 	}
 	public static void main(String[] args) {
 		SpringApplication.run(CursoKafkaSpringApplication.class, args);
