@@ -1,6 +1,7 @@
 package com.devl2ap.kafka;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,14 @@ public class CursoKafkaSpringApplication implements CommandLineRunner {
 	public static void main(String[] args) {
 		SpringApplication.run(CursoKafkaSpringApplication.class, args);
 	}
+	/*SYNC*/
+	@Override
+	public void run(String... args) throws Exception {
+		kafkaTemplate.send("l2ap-topic", "Sample Message Kafka L2AP SYNC").get(100,TimeUnit.MILLISECONDS);
+	}
+
+	/*ASYNC*/
+	/*
 	@Override
 	public void run(String... args) throws Exception {
 		// 1. Cambia el tipo de retorno a CompletableFuture
@@ -44,4 +53,5 @@ public class CursoKafkaSpringApplication implements CommandLineRunner {
 		});
 
 	}
+	*/
 }
