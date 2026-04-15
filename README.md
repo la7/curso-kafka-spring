@@ -1,4 +1,4 @@
-# curso-kafka-spring
+# kafka-spring
 
 Proyecto de referencia mínimo para conectar una aplicación Spring Boot con Apache Kafka.
 
