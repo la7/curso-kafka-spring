@@ -15,6 +15,7 @@ Requisitos
 - Java 11+ (o la versión configurada en el proyecto)
 - Maven (o usar el wrapper `./mvnw` en macOS)
 - Docker & Docker Compose (para ejecutar Kafka localmente)
+- Recomendado: Apache Kafka 4.1.2 (modo KRaft para nuevos despliegues)
 
 Inicio rápido (Kafka con Docker Compose - modo KRaft)
 
@@ -23,28 +24,27 @@ Inicio rápido (Kafka con Docker Compose - modo KRaft)
 ```yaml
 version: '3.8'
 services:
-	kafka:
-		image: bitnami/kafka:3.6.1
-		container_name: kafka
-		ports:
-			- "9092:9092"
-		environment:
-			KAFKA_BROKER_ID: 1
-			KAFKA_CFG_PROCESS_ROLES: broker,controller
-			KAFKA_CFG_NODE_ID: 1
-			KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-			KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-			KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-			KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-			ALLOW_PLAINTEXT_LISTENER: "yes"
-		healthcheck:
-			test: ["CMD", "bash", "-lc", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
-			interval: 10s
-			timeout: 5s
-			retries: 10
+  kafka:
+    image: bitnami/kafka:4.1.2
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 ```
-
 2) Levantar la pila:
 
 ```bash
@@ -65,18 +65,16 @@ docker-compose exec kafka kafka-topics.sh --list --bootstrap-server localhost:90
 
 Probar con producer/consumer de consola
 
-Producer:
+Producer (con Docker Compose):
 
 ```bash
-docker exec -it $(docker ps --filter "ancestor=confluentinc/cp-kafka" --format "{{.Names}}") \
-	kafka-console-producer --topic l2ap-topic --bootstrap-server localhost:9092
+docker-compose exec kafka kafka-console-producer --topic l2ap-topic --bootstrap-server localhost:9092
 ```
 
-Consumer (desde el inicio):
+Consumer (desde el inicio, con Docker Compose):
 
 ```bash
-docker exec -it $(docker ps --filter "ancestor=confluentinc/cp-kafka" --format "{{.Names}}") \
-	kafka-console-consumer --topic l2ap-topic --from-beginning --bootstrap-server localhost:9092
+docker-compose exec kafka kafka-console-consumer --topic l2ap-topic --from-beginning --bootstrap-server localhost:9092
 ```
 
 Nota sobre ZooKeeper y KRaft (modo sin ZooKeeper)
